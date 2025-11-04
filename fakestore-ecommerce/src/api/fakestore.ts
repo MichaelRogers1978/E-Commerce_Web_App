@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { fetchAllProductsFromFirestore, fetchCategoriesFromFirestore, fetchProductsByCategoryFromFirestore } from '../services/productService';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://fakestoreapi.com';
 
@@ -59,36 +60,66 @@ const fallbackCategories = ["electronics", "clothing", "books", "home"];
 
 export const fetchAllProducts = async () => {
     try {
-        console.log('Fetching products from:', `${BASE_URL}/products`);
-        const res = await apiClient.get(`${BASE_URL}/products`);
-        return res.data;
-    } catch (error) {
-        console.error('API Error fetching products:', error);
-        console.log('Using fallback products data');
-        return fallbackProducts;
+        console.log('Fetching products from Firestore...');
+        const firestoreProducts = await fetchAllProductsFromFirestore();
+        if (firestoreProducts.length > 0) {
+            return firestoreProducts;
+        }
+        throw new Error('No products in Firestore, falling back to API');
+    } catch (firestoreError) {
+        console.log('Firestore failed, trying FakeStore API...', firestoreError);
+        try {
+            console.log('Fetching products from:', `${BASE_URL}/products`);
+            const res = await apiClient.get(`${BASE_URL}/products`);
+            return res.data;
+        } catch (apiError) {
+            console.error('API Error fetching products:', apiError);
+            console.log('Using fallback products data');
+            return fallbackProducts;
+        }
     }
 };
 
 export const fetchCategories = async () => {
     try {
-        console.log('Fetching categories from:', `${BASE_URL}/products/categories`);
-        const res = await apiClient.get(`${BASE_URL}/products/categories`);
-        return res.data;
-    } catch (error) {
-        console.error('API Error fetching categories:', error);
-        console.log('Using fallback categories data');
-        return fallbackCategories;
+        console.log('Fetching categories from Firestore...');
+        const firestoreCategories = await fetchCategoriesFromFirestore();
+        if (firestoreCategories.length > 0) {
+            return firestoreCategories;
+        }
+        throw new Error('No categories in Firestore, falling back to API');
+    } catch (firestoreError) {
+        console.log('Firestore failed, trying FakeStore API...', firestoreError);
+        try {
+            console.log('Fetching categories from:', `${BASE_URL}/products/categories`);
+            const res = await apiClient.get(`${BASE_URL}/products/categories`);
+            return res.data;
+        } catch (apiError) {
+            console.error('API Error fetching categories:', apiError);
+            console.log('Using fallback categories data');
+            return fallbackCategories;
+        }
     }
 };
 
 export const fetchProductsByCategory = async (category: string) => {
     try {
-        console.log('Fetching products by category from:', `${BASE_URL}/products/category/${category}`);
-        const res = await apiClient.get(`${BASE_URL}/products/category/${category}`);
-        return res.data;
-    } catch (error) {
-        console.error('API Error fetching products by category:', error);
-        console.log('Using filtered fallback products data');
-        return fallbackProducts.filter(product => product.category === category);
+        console.log('Fetching products by category from Firestore...');
+        const firestoreProducts = await fetchProductsByCategoryFromFirestore(category);
+        if (firestoreProducts.length > 0) {
+            return firestoreProducts;
+        }
+        throw new Error('No products in category in Firestore, falling back to API');
+    } catch (firestoreError) {
+        console.log('Firestore failed, trying FakeStore API...', firestoreError);
+        try {
+            console.log('Fetching products by category from:', `${BASE_URL}/products/category/${category}`);
+            const res = await apiClient.get(`${BASE_URL}/products/category/${category}`);
+            return res.data;
+        } catch (apiError) {
+            console.error('API Error fetching products by category:', apiError);
+            console.log('Using filtered fallback products data');
+            return fallbackProducts.filter(product => product.category === category);
+        }
     }
 };

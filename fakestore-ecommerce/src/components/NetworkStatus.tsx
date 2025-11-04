@@ -24,7 +24,7 @@ export default function NetworkStatus({ error, isLoading }: NetworkStatusProps) 
     if (!isOnline) {
         return (
             <div className = "network-status error">
-                <h3>🔌 No Internet Connection</h3>
+                <h3>No Internet Connection</h3>
                 <p>Please check your internet connection and try again.</p>
             </div>
         );
@@ -37,7 +37,7 @@ export default function NetworkStatus({ error, isLoading }: NetworkStatusProps) 
         
         if (isAccessDenied) {
             return (
-                <div className="network-status error">
+                <div className = "network-status error">
                     <h3>API Access Temporarily Blocked</h3>
                     <p>The API service has temporarily blocked access. This is usually due to:</p>
                     <ul>
@@ -73,7 +73,7 @@ export default function NetworkStatus({ error, isLoading }: NetworkStatusProps) 
 
     if (isLoading) {
         return (
-            <div className="network-status loading">
+            <div className = "network-status loading">
                 <p>Loading products...</p>
             </div>
         );

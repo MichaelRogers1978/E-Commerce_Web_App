@@ -47,8 +47,11 @@ const cartSlice = createSlice({
         clearCart: (state) => {
             state.items = [];
         },
+        loadCartFromFirebase: (state, action: PayloadAction<CartItem[]>) => {
+            state.items = action.payload;
+        },
     },
 });
 
-export const { addToCart, removeFromCart, updateQuantity, clearCart } = cartSlice.actions;
+export const { addToCart, removeFromCart, updateQuantity, clearCart, loadCartFromFirebase } = cartSlice.actions;
 export default cartSlice.reducer;

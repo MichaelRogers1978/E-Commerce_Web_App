@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
-import { useAuth0 } from '@auth0/auth0-react';
+import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
 
 export default function Header() {
     const items = useSelector((state: RootState) => state.cart.items);
     const total = items.reduce((sum: number, i: any) => sum + i.quantity, 0);
-    const { loginWithRedirect, logout, isAuthenticated, user, isLoading } = useAuth0();
+    const { user, loading, logout, isAuthenticated } = useFirebaseAuth();
 
     return (
         <header className = "header">
@@ -15,37 +15,28 @@ export default function Header() {
                 <div className = "right">
                     <Link to = "/cart">Cart ({total})</Link>
 
-                    {isLoading ? (
+                    {loading ? (
                         <span>Loading...</span>
                     ) : isAuthenticated ? (
                         <>
-                            <span style = {{ marginLeft: "1rem"}}>
-                                {user?.name?.split(" ")[0]} 
+                            <span className="user-display">
+                                {user?.email?.split("@")[0]} 
                             </span>
-                            <img
-                            src = {user?.picture}
-                            alt = {user?.name}
-                            style = {{
-                                width: "32px",
-                                height: "32px",
-                                borderRadius: "50%",
-                                marginLeft: "8px",
-                            }} 
-                        />
-                        <button
-                            className = "button small"
-                            onClick = {() => 
-                                logout({ logoutParams: {returnTo: window.location.origin } })
-                                }
-                            style = {{ marginLeft: "8px" }}
-                        >
-                            Log Out 
-                        </button>
+                            <Link to = "/profile" style = {{ marginLeft: "8px" }}>Profile</Link>
+                            <Link to = "/orders" style = {{ marginLeft: "8px" }}>Orders</Link>
+                            <Link to = "/products" style = {{ marginLeft: "8px" }}>Products</Link>
+                            <button
+                                className = "button small"
+                                onClick = {logout}
+                                style = {{ marginLeft: "8px" }}
+                            >
+                                Log Out 
+                            </button>
                         </>
                     ) : (
-                        <button className = "button small" onClick = {() => loginWithRedirect()}>
+                        <Link className = "button small" to = "/auth">
                             Log In
-                        </button>
+                        </Link>
                     )}
                 </div>
             </div>

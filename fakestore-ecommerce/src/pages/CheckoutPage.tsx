@@ -1,46 +1,48 @@
-import { useDispatch } from "react-redux";
-import { clearCart } from "../store/cartSlice";
+import { useSelector } from "react-redux";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
+import OrderForm from "../components/forms/OrderForm";
+import type { RootState } from "../store";
 
 export default function CheckoutPage() {
-    const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { isAuthenticated, loginWithRedirect, user} = useAuth0();
+    const cartItems = useSelector((state: RootState) => state.cart.items);
+    const { isAuthenticated } = useFirebaseAuth();
     const [done, setDone] = useState(false);
 
-    const handleCheckout = () => {
-        if (!isAuthenticated) {
-            loginWithRedirect();
-            return;
-        }
-        dispatch(clearCart());
-        sessionStorage.removeItem("cart");
-        setDone(true);
-    };
+    if (cartItems.length === 0 && !done) {
+        return (
+            <div className = "container">
+                <h1>Checkout</h1>
+                <p>Your cart is empty. <a href="/">Continue shopping</a></p>
+            </div>
+        );
+    }
 
     return (
         <div className = "container">
             <h1>Checkout</h1>
 
-            {isAuthenticated && (
-                <p>
-                    You're checking out as<strong>{user?.email}</strong>
-                </p>
-            )}
-
-            {done ? (
+            {!isAuthenticated ? (
+                <div>
+                    <p>Please log in to complete your order.</p>
+                    <button className = "button" onClick = {() => navigate("/auth")}>
+                        Log In
+                    </button>
+                </div>
+            ) : done ? (
                 <>
                 <p>Purchase complete. Your cart is clear.</p>
                 <button className = "button" onClick = {() => navigate("/")}>
                     Back to Shop
                 </button>
+                <button className = "button" onClick = {() => navigate("/orders")} style = {{ marginLeft: "1rem" }}>
+                    View Orders
+                </button>
                 </>
             ) : (
-                <button className = "button" onClick = {handleCheckout}>
-                    Confirm Checkout
-                </button>
+                <OrderForm onOrderComplete = {() => setDone(true)} />
             )}
         </div>
     );
