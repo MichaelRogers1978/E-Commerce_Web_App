@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
+import { useFirebaseAuth } from '../../hooks/useFirebaseAuth';
 
 export default function FirebaseAuth() {
   const [email, setEmail] = useState('');

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useState, useEffect } from 'react';
 
 const API_BASE = 'https://jsonplaceholder.typicode.com';
 
@@ -23,7 +24,7 @@ export const fetchUsers = async () => {
 };
 
 export const TestComponent = () => {
-  const [todos, setTodos] = useState([]);
+  const [todos, setTodos] = useState<any[]>([]);
   
   useEffect(() => {
     fetchTodos().then(setTodos);
@@ -32,7 +33,7 @@ export const TestComponent = () => {
   return (
     <div>
       <h2>Test Data from JSONPlaceholder</h2>
-      {todos.slice(0, 5).map(todo => (
+      {todos.slice(0, 5).map((todo: any) => (
         <div key={todo.id}>
           <p><strong>Title:</strong> {todo.title}</p>
           <p><strong>Completed:</strong> {todo.completed ? 'Yes' : 'No'}</p>
