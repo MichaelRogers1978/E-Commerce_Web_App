@@ -385,3 +385,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [TanStack Query Documentation](https://tanstack.com/query)
 - [Auth0 Documentation](https://auth0.com/docs)
 - [Vite Documentation](https://vitejs.dev/)
+# CI/CD Pipeline Ready
