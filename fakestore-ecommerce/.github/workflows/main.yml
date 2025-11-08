@@ -7,12 +7,12 @@ on:
         branches: [ main ]
 
 jobs:
-
-    ci:
-        runs-on: ubuntu-latest
+  # Continuous Integration Job
+  ci:
+    runs-on: ubuntu-latest
     
     strategy:
-        matrix:
+      matrix:
         node-version: [18.x, 20.x]
     
     steps:
@@ -40,7 +40,7 @@ jobs:
       run: |
         cd fakestore-ecommerce
         npm run test -- --run --coverage
-        env:
+      env:
         CI: true
     
     - name: Build application
