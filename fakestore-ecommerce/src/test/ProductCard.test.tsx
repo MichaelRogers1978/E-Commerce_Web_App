@@ -53,7 +53,7 @@ describe('ProductCard Component', () => {
         <ProductCard product = {mockProduct} />
       </TestWrapper>
     )
-s
+
     expect(screen.getByText(/This is a test product description.../)).toBeInTheDocument()
   })
 

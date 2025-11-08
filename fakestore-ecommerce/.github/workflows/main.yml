@@ -1,0 +1,92 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Continuous Integration Job
+  ci:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './fakestore-ecommerce/package-lock.json'
+    
+    - name: Install dependencies
+      run: |
+        cd fakestore-ecommerce
+        npm ci
+    
+    - name: Run linting
+      run: |
+        cd fakestore-ecommerce
+        npm run lint
+    
+    - name: Run tests
+      run: |
+        cd fakestore-ecommerce
+        npm run test -- --run --coverage
+      env:
+        CI: true
+    
+    - name: Build application
+      run: |
+        cd fakestore-ecommerce
+        npm run build
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files-${{ matrix.node-version }}
+        path: fakestore-ecommerce/dist/
+        retention-days: 1
+
+  # Continuous Deployment Job (only runs on main branch and after CI passes)
+  cd:
+    needs: ci
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: './fakestore-ecommerce/package-lock.json'
+    
+    - name: Install dependencies
+      run: |
+        cd fakestore-ecommerce
+        npm ci
+    
+    - name: Build for production
+      run: |
+        cd fakestore-ecommerce
+        npm run build
+    
+    - name: Deploy to Vercel
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: ./fakestore-ecommerce
+        vercel-args: '--prod'
