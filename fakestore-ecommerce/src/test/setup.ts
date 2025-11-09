@@ -1,10 +1,17 @@
 import '@testing-library/jest-dom'
-import { vi } from 'vitest'
 
-globalThis.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}))
+// Mock ResizeObserver for tests
+Object.defineProperty(window, 'ResizeObserver', {
+  writable: true,
+  value: class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+});
 
-globalThis.confirm = vi.fn(() => true)
+// Mock confirm for tests
+Object.defineProperty(window, 'confirm', {
+  writable: true,
+  value: () => true
+});
