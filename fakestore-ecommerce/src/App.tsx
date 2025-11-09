@@ -9,6 +9,7 @@ import UserProfile from "./pages/UserProfile";
 import OrderHistory from "./pages/OrderHistory";
 import ProductManagement from "./pages/ProductManagement";
 import { useCartSync } from "./hooks/useCartSync";
+import "./debug-env"; // Temporary debug import
 
 export default function App() {
   useCartSync();
