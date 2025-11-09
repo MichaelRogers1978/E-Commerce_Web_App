@@ -2,6 +2,8 @@
 
 A modern React e-commerce application built with TypeScript, Redux Toolkit, TanStack Query, and Firebase. This application uses the FakeStore API to display products and provides a complete shopping cart experience with Firebase authentication, user management, and order history.
 
+ -- Updated with fresh Firebase configuration! --
+
 # Features #
 
 - Product Catalog: Browse products from various categories via FakeStore API

@@ -32,7 +32,7 @@ const AddDataForm: React.FC = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit = {handleSubmit}>
             <input name = "name" value = {data.name} onChange = {handleChange} placeholder = "Name" />
             <input name = "age" type = "number" value = {data.age} onChange = {handleChange} placeholder = "Age" />
             <button type = "submit">Add User</button>
