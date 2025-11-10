@@ -57,47 +57,43 @@ const fallbackProducts = [
 ];
 
 export const fetchAllProducts = async () => {
-    console.log('🚀 Starting hybrid product fetch...');
+    console.log('Starting hybrid product fetch...');
     const allProducts = [];
     
-    // Step 1: Load FakeStore API products first
     try {
-        console.log('📡 Fetching products from FakeStore API...', BASE_URL);
-        console.log('🔗 Full API URL:', `${BASE_URL}/products`);
+        console.log('Fetching products from FakeStore API...', BASE_URL);
+        console.log('Full API URL:', `${BASE_URL}/products`);
         
-        // Test API connectivity first
         const res = await apiClient.get(`${BASE_URL}/products`);
         const apiProducts = res.data;
         
-        console.log('✅ FakeStore API Response:', apiProducts?.length, 'products received');
+        console.log('FakeStore API Response:', apiProducts?.length, 'products received');
         
         if (apiProducts && Array.isArray(apiProducts) && apiProducts.length > 0) {
             const processedApiProducts = apiProducts.map((product: any) => ({
                 ...product,
-                firestoreId: null // Mark as API products
+                firestoreId: null 
             }));
             
             allProducts.push(...processedApiProducts);
-            console.log(`✅ Added ${apiProducts.length} products from FakeStore API`);
+            console.log(`Added ${apiProducts.length} products from FakeStore API`);
         } else {
             throw new Error('No products received from API');
         }
     } catch (apiError) {
-        console.error('❌ FakeStore API failed:', apiError);
-        console.log('🔄 Using fallback products instead...');
+        console.error('FakeStore API failed:', apiError);
+        console.log('Using fallback products instead...');
         
-        // Use fallback products if API fails
         const processedFallbackProducts = fallbackProducts.map(product => ({
             ...product,
             firestoreId: null
         }));
         allProducts.push(...processedFallbackProducts);
-        console.log(`✅ Added ${fallbackProducts.length} fallback products`);
+        console.log(`Added ${fallbackProducts.length} fallback products`);
     }
     
-    // Step 2: Add custom Firestore products
     try {
-        console.log('🔥 Fetching custom products from Firestore...');
+        console.log('Fetching custom products from Firestore...');
         const firestoreProducts = await fetchAllProductsFromFirestore();
         
         if (firestoreProducts && firestoreProducts.length > 0) {
@@ -107,16 +103,16 @@ export const fetchAllProducts = async () => {
             }));
             
             allProducts.push(...processedFirestoreProducts);
-            console.log(`✅ Added ${firestoreProducts.length} custom products from Firestore`);
+            console.log(`Added ${firestoreProducts.length} custom products from Firestore`);
         } else {
-            console.log('ℹ️ No custom products found in Firestore');
+            console.log('ℹNo custom products found in Firestore');
         }
     } catch (firestoreError) {
-        console.error('⚠️ Firestore fetch error (this is okay):', firestoreError);
+        console.error('Firestore fetch error (this is okay):', firestoreError);
     }
     
-    console.log(`🎯 FINAL RESULT: ${allProducts.length} total products loaded`);
-    console.log('📊 Products breakdown:', allProducts.map(p => `${p.id}: ${p.title.substring(0,30)}...`));
+    console.log(`FINAL RESULT: ${allProducts.length} total products loaded`);
+    console.log('Products breakdown:', allProducts.map(p => `${p.id}: ${p.title.substring(0,30)}...`));
     return allProducts;
 };
 
