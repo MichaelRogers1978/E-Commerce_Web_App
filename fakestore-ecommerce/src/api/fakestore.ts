@@ -59,20 +59,18 @@ const fallbackProducts = [
 export const fetchAllProducts = async () => {
     const allProducts = [];
     
-    // First, try to get FakeStore API products (original products)
     try {
         console.log('Fetching products from FakeStore API...');
         const res = await apiClient.get(`${BASE_URL}/products`);
         const apiProducts = res.data;
         
-        // Ensure API products have firestoreId: null to distinguish them
         const processedApiProducts = apiProducts.map((product: any) => ({
             ...product,
-            firestoreId: null // Mark as API products
+            firestoreId: null
         }));
         
         allProducts.push(...processedApiProducts);
-        console.log(`✅ Loaded ${apiProducts.length} products from FakeStore API`);
+        console.log(`Loaded ${apiProducts.length} products from FakeStore API`);
     } catch (apiError) {
         console.log('FakeStore API failed, using fallback products...', apiError);
         const processedFallbackProducts = fallbackProducts.map(product => ({
@@ -82,43 +80,39 @@ export const fetchAllProducts = async () => {
         allProducts.push(...processedFallbackProducts);
     }
     
-    // Then, add custom Firestore products (your additions)
     try {
         console.log('Fetching custom products from Firestore...');
         const firestoreProducts = await fetchAllProductsFromFirestore();
         
         if (firestoreProducts.length > 0) {
-            // Ensure Firestore products have unique IDs that don't conflict with API products
             const processedFirestoreProducts = firestoreProducts.map(product => ({
                 ...product,
-                id: product.id > 1000 ? product.id : product.id + 1000 // Ensure unique IDs
+                id: product.id > 1000 ? product.id : product.id + 1000 
             }));
             
             allProducts.push(...processedFirestoreProducts);
-            console.log(`✅ Added ${firestoreProducts.length} custom products from Firestore`);
+            console.log(`Added ${firestoreProducts.length} custom products from Firestore`);
         }
     } catch (firestoreError) {
         console.log('No custom products in Firestore (this is fine):', firestoreError);
     }
     
-    console.log(`🎯 Total products loaded: ${allProducts.length}`);
+    console.log(`Total products loaded: ${allProducts.length}`);
     return allProducts;
 };
 
 export const fetchCategories = async () => {
-    // Get all products (both API and Firestore) and extract unique categories
     const allProducts = await fetchAllProducts();
     const allCategories = Array.from(new Set(allProducts.map((product: any) => product.category)));
     
-    console.log(`🎯 Total categories found: ${allCategories.length}`, allCategories);
+    console.log(`Total categories found: ${allCategories.length}`, allCategories);
     return allCategories;
 };
 
 export const fetchProductsByCategory = async (category: string) => {
-    // Get all products and filter by category
     const allProducts = await fetchAllProducts();
     const categoryProducts = allProducts.filter((product: any) => product.category === category);
     
-    console.log(`🎯 Found ${categoryProducts.length} products in category "${category}"`);
+    console.log(`Found ${categoryProducts.length} products in category "${category}"`);
     return categoryProducts;
 };
