@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { fetchAllProductsFromFirestore, fetchCategoriesFromFirestore, fetchProductsByCategoryFromFirestore } from '../services/productService';
+import { fetchAllProductsFromFirestore } from '../services/productService';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://fakestoreapi.com';
 
@@ -56,70 +56,69 @@ const fallbackProducts = [
     }
 ];
 
-const fallbackCategories = ["electronics", "clothing", "books", "home"];
-
 export const fetchAllProducts = async () => {
+    const allProducts = [];
+    
+    // First, try to get FakeStore API products (original products)
     try {
-        console.log('Fetching products from Firestore...');
-        const firestoreProducts = await fetchAllProductsFromFirestore();
-        if (firestoreProducts.length > 0) {
-            return firestoreProducts;
-        }
-        throw new Error('No products in Firestore, falling back to API');
-    } catch (firestoreError) {
-        console.log('Firestore failed, trying FakeStore API...', firestoreError);
-        try {
-            console.log('Fetching products from:', `${BASE_URL}/products`);
-            const res = await apiClient.get(`${BASE_URL}/products`);
-            return res.data;
-        } catch (apiError) {
-            console.error('API Error fetching products:', apiError);
-            console.log('Using fallback products data');
-            return fallbackProducts;
-        }
+        console.log('Fetching products from FakeStore API...');
+        const res = await apiClient.get(`${BASE_URL}/products`);
+        const apiProducts = res.data;
+        
+        // Ensure API products have firestoreId: null to distinguish them
+        const processedApiProducts = apiProducts.map((product: any) => ({
+            ...product,
+            firestoreId: null // Mark as API products
+        }));
+        
+        allProducts.push(...processedApiProducts);
+        console.log(`✅ Loaded ${apiProducts.length} products from FakeStore API`);
+    } catch (apiError) {
+        console.log('FakeStore API failed, using fallback products...', apiError);
+        const processedFallbackProducts = fallbackProducts.map(product => ({
+            ...product,
+            firestoreId: null
+        }));
+        allProducts.push(...processedFallbackProducts);
     }
+    
+    // Then, add custom Firestore products (your additions)
+    try {
+        console.log('Fetching custom products from Firestore...');
+        const firestoreProducts = await fetchAllProductsFromFirestore();
+        
+        if (firestoreProducts.length > 0) {
+            // Ensure Firestore products have unique IDs that don't conflict with API products
+            const processedFirestoreProducts = firestoreProducts.map(product => ({
+                ...product,
+                id: product.id > 1000 ? product.id : product.id + 1000 // Ensure unique IDs
+            }));
+            
+            allProducts.push(...processedFirestoreProducts);
+            console.log(`✅ Added ${firestoreProducts.length} custom products from Firestore`);
+        }
+    } catch (firestoreError) {
+        console.log('No custom products in Firestore (this is fine):', firestoreError);
+    }
+    
+    console.log(`🎯 Total products loaded: ${allProducts.length}`);
+    return allProducts;
 };
 
 export const fetchCategories = async () => {
-    try {
-        console.log('Fetching categories from Firestore...');
-        const firestoreCategories = await fetchCategoriesFromFirestore();
-        if (firestoreCategories.length > 0) {
-            return firestoreCategories;
-        }
-        throw new Error('No categories in Firestore, falling back to API');
-    } catch (firestoreError) {
-        console.log('Firestore failed, trying FakeStore API...', firestoreError);
-        try {
-            console.log('Fetching categories from:', `${BASE_URL}/products/categories`);
-            const res = await apiClient.get(`${BASE_URL}/products/categories`);
-            return res.data;
-        } catch (apiError) {
-            console.error('API Error fetching categories:', apiError);
-            console.log('Using fallback categories data');
-            return fallbackCategories;
-        }
-    }
+    // Get all products (both API and Firestore) and extract unique categories
+    const allProducts = await fetchAllProducts();
+    const allCategories = Array.from(new Set(allProducts.map((product: any) => product.category)));
+    
+    console.log(`🎯 Total categories found: ${allCategories.length}`, allCategories);
+    return allCategories;
 };
 
 export const fetchProductsByCategory = async (category: string) => {
-    try {
-        console.log('Fetching products by category from Firestore...');
-        const firestoreProducts = await fetchProductsByCategoryFromFirestore(category);
-        if (firestoreProducts.length > 0) {
-            return firestoreProducts;
-        }
-        throw new Error('No products in category in Firestore, falling back to API');
-    } catch (firestoreError) {
-        console.log('Firestore failed, trying FakeStore API...', firestoreError);
-        try {
-            console.log('Fetching products by category from:', `${BASE_URL}/products/category/${category}`);
-            const res = await apiClient.get(`${BASE_URL}/products/category/${category}`);
-            return res.data;
-        } catch (apiError) {
-            console.error('API Error fetching products by category:', apiError);
-            console.log('Using filtered fallback products data');
-            return fallbackProducts.filter(product => product.category === category);
-        }
-    }
+    // Get all products and filter by category
+    const allProducts = await fetchAllProducts();
+    const categoryProducts = allProducts.filter((product: any) => product.category === category);
+    
+    console.log(`🎯 Found ${categoryProducts.length} products in category "${category}"`);
+    return categoryProducts;
 };
